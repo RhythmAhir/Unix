@@ -1,0 +1,117 @@
+Submitted: 
+
+ 1 #!/bin/bash
+  2
+  3
+  4 # CREATE FUNCTION RESTORE
+  5 function restore() {
+  6 echo $1
+  7
+  8 #ERROR IF NO ARGUMENT IS PROVIDED
+  9 if [[ "$1" = ""  ]]
+ 10         then echo "ERROR: No filename provided. "
+ 11         exit 1
+ 12 fi
+ 13
+ 14 #ERROR IF FILE DOES NOT EXIST
+ 15 if [[ ! -e ~/recyclebin/"$1" ]]
+ 16         then echo "ERROR: file does not exist in recyclebin. "
+ 17 exit 1
+ 18 fi
+ 19
+ 20 file=$(grep "$1" ~/.restore.info | cut -d ":" -f2 | uniq)
+ 21
+ 22 if [[ -e $file ]]
+ 23 then
+ 24 read -p "Do you want to overwrite? y/n? " input
+ 25         if [[ $input != [Yy*] ]]
+ 26         then
+ 27             exit 1
+ 28          fi
+ 29 fi
+ 30
+ 31 mv ~/recyclebin/$1 $file
+ 32 }
+ 33
+ 34
+ 35 restore $1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Previous:
+
+ 1 #!/bin/bash
+  2
+  3
+  4 # CREATE FUNCTION RESTORE
+  5 function restore() {
+  6 echo $1
+  7
+  8 #ERROR IF NO ARGUMENT IS PROVIDED
+  9 if [[ "$1" = ""  ]]
+ 10         then echo "ERROR: No filename provided"
+ 11         exit 1
+ 12 fi
+ 13
+ 14 #ERROR IF FILE DOES NOT EXIST
+ 15 if [[ ! -e ~/recyclebin/"$1" ]]
+ 16         then echo "ERROR: file does not exist in recyclebin
+ 17 "
+ 18 exit 1
+ 19 fi
+ 20
+ 21 file=$(grep "$1" ~/.restore.info | cut -d ":" -f2 | uniq)
+ 22
+ 23 if [[ -e $file ]]
+ 24 then
+ 25 read -p "Do you want to overwrite? y/n" input
+ 26         if [[ $input != [Yy*] ]]
+ 27         then
+ 28             exit 1
+ 29          fi
+ 30 fi
+ 31
+ 32 mv ~/recyclebin/$1 $file
+ 33 }
+ 34
+ 35  optFunc(){
+ 36
+ 37               optr=false
+ 38
+ 39
+ 40                  while getopts :r option
+ 41                  do
+ 42                          case $option in
+ 43                                  r) optr=true;;
+ 44                                  *) echo "Not a valid option"
+ 45                                           exit 1;;
+ 46                          esac
+ 47                  done
+ 48          }
+ 49 
+ 50  check(){
+ 51  if [[ $optr && ! -e $file  ]]
+ 52          then
+ 53                  mkdir -p $file
+ 54  fi
+ 55  }
+ 56 optFunc $*
+ 57  shift $[OPTIND-1]
+ 58  check $*
+ 59
+ 60 restore $1

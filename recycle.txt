@@ -1,0 +1,103 @@
+  1 #!/bin/bash
+  2
+  3 if [ ! -d $HOME/recyclebin ]
+  4 then
+  5 mkdir $HOME/recyclebin
+  6 fi
+  7
+  8  if [[ $# -eq 0 ]]
+  9  then
+ 10  echo "No File Provided. "
+ 11  exit 1
+ 12 fi
+ 13
+ 14 recycle(){
+ 15
+ 16 f=$1
+ 17
+ 18 if [[ ! -f $f ]]
+ 19 then
+ 20 echo "$f Does not exists. "
+ 21 exit 1
+ 22 elif [[ -d $f ]]
+ 23 then
+ 24 echo "Can not remove directory. "
+ 25 exit 1
+ 26
+ 27 elif echo $f | grep "recycle"
+ 28 then
+ 29 echo "Attempting to delete recycle – operation aborted. "
+ 30 exit 1
+ 31 fi
+ 32
+ 33 inode=$(ls -i $f | cut -d " " -f1)
+ 34 filename=$(basename $f)
+ 35 filename_inode=$filename"_"$inode
+ 36
+ 37 mv $f $HOME/recyclebin/$filename_inode
+ 38
+ 39 fullpath=$(readlink -f $f)
+ 40 echo $filename_inode:$fullpath >> $HOME/.restore.info
+ 41 }
+ 42
+ 43 optFunc(){
+ 44             opti=false
+ 45             optv=false
+ 46             optr=false
+ 47
+ 48
+ 49
+ 50                 while getopts :ivr option
+ 51                 do
+ 52                         case $option in
+ 53                                 i) opti=true;;
+ 54                                 v) optv=true;;
+ 55                                 r) optr=true;;
+ 56                                 *) echo "Not a valid option"
+ 57                                         exit 1;;
+ 58                         esac
+ 59                 done
+ 60         }
+ 61 check(){
+ 62 if $opti && $optv
+ 63  then
+ 64      read -p "Confirm you want to recycle $1 (y/n)? " res
+ 65               if [[ $res = [yY*] ]]
+ 66                          then
+ 67                                 echo "recycled $1."
+ 68                         else
+ 69                                 exit 1
+ 70                         fi
+ 71              elif $opti
+ 72                          then
+ 73                          read -p "Confirm you want to recycle $1 (y/n) ?" ress
+ 74                                 if [[ $ress != [yY*] ]]
+ 75                                  then
+ 76                                 exit 1
+ 77                                  fi
+ 78             elif  $optv
+ 79                  then
+ 80                 echo "Recycled $1"
+ 81         fi
+ 82
+ 83 if [[ $optr && -d $1 ]]
+ 84 then
+ 85         if [[ -d "ls -A $1" ]]
+ 86         then
+ 87                 rmdir $1
+ 88         else
+ 89                 bash recycle $1/*
+ 90                 rmdir $1
+ 91         fi
+ 92 fi
+ 93 }
+ 94
+ 95 optFunc $*
+ 96 shift $[OPTIND-1]
+ 97 check $*
+ 98
+ 99 for object in $*
+100         do
+101           recycle $object
+102         done
+                                        
